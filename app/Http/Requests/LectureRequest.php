@@ -20,9 +20,10 @@ class LectureRequest extends ApiRequest
      */
     public function rules()
     {
+        $id = (int)$this->route()->parameter('lecture');
         return [
-            'name' => 'required|unique:lectures',
-            'description'=>'required'
+            'name' => 'required|unique:lectures,name,' . $id,
+            'description' => 'required'
         ];
     }
 }
