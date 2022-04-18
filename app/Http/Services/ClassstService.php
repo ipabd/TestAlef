@@ -1,47 +1,80 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: master
- * Date: 29.03.2022
- * Time: 18:24
- */
-
 namespace App\Http\Services;
+
 use App\Http\Requests\ClassstRequest;
 use App\Models\Classst;
+use App\Models\Lecture;
+use Illuminate\Support\Facades\DB;
 
 class ClassstService
 {
-    public function getClassst()
-    {   $resultClassst = [];
-        $classst= Classst::get();
-        $resultClassst[] = $classst->map(function($elem) {
-            return $elem->name;
-        });
-        return $resultClassst;
+protected Object $model;
+protected Object $lecz;
+
+    public function __construct(Classst $classst, Lecture $lec)
+    {
+        $this->model = $classst;
+        $this->lecz = $lec;
     }
 
-    public function getShow($id)
+    public function getClassst(): array
     {
-        $resultClassst = [];
-        $classst= Classst::with('student:classst_id,name,email')->where('id',$id)->get();
-        $classst->each(function ($item, $key) use (&$resultClassst) {
-            $collection=$item->lecture()->get();
-            $resultClassst['lecture'] = $collection->map(function($elem) {
-                return $elem->name;
-            });
-            $resultClassst['student'] = $item->student->map(function($elem) {
-                return $elem->name;
-            });
+        $resultClassst = (array)[];
+        $this->model::all()->map(function (Object $elem) use (&$resultClassst) {
+            $resultClassst[] = $elem->name;
         });
-        return $resultClassst;
+        return (array)$resultClassst;
+    }
+
+    public function getShow(int $id): array
+    {
+        $resultClassst = (array)[];
+        $classst = $this->model::findOrFail($id);
+        $resultClassst['name'] = $classst->name;
+        $classst->lecture()->get()->map(function (Object $elem) use (&$resultClassst) {
+            $resultClassst['lecz'][] = $elem->name;
+        });
+        $classst->student()->get()->map(function (Object $elem) use (&$resultClassst) {
+            $resultClassst['studen'][] = $elem->name;
+        });
+        return (array)$resultClassst;
     }
 
 
-    public function save(ClassstRequest $request,  Classst $classst)
+    public function save(ClassstRequest $request, ?int $id = 0): Object
     {
+        if ($id) {
+            $req = (array)$request->all();
+            $lecture_id = (int)(isset($req['lecture'])) ? $req['lecture'] : null;
+            $parent = (int)(isset($req['parent'])) ? $req['parent'] : null;
+            $classst = (Object)$this->model::find($id);
+            if ($lecture_id) {
+                if ($this->lecz->find($lecture_id)) {
+                    $lecture = ($classst->lecture()->find($lecture_id)) ?
+                        (Object)$classst->lecture()->find($lecture_id) : null;
+                    if ($lecture) {
+                        $lecture->pivot->parent = $parent;
+                        $lecture->pivot->update();
+                    } else {
+                        DB::insert("INSERT INTO plans (classst_id,lecture_id,parent)
+                           values (?,?,?)", [$id, $lecture_id, $parent]);
+                    }
+                }
+            }
+        } else {
+            $classst = (Object)new $this->model;
+        }
         $classst->fill($request->only($classst->getFillable()));
         $classst->save();
-        return $classst;
+        return (Object)$classst;
+    }
+
+    public function saveStudent(Object $student): void
+    {
+        if (count($student)) {
+            $student->toQuery()->update([
+                'classst_id' => 0,
+            ]);
+        }
     }
 }
