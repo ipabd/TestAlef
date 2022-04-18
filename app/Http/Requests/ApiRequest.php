@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: note
- * Date: 15.11.2020
- * Time: 10:17
- */
 
 namespace App\Http\Requests;
 
@@ -20,16 +14,14 @@ class ApiRequest extends FormRequest
     /**
      * Handle a failed validation attempt.
      *
-     * @param  \Illuminate\Contracts\Validation\Validator  $validator
+     * @param  \Illuminate\Contracts\Validation\Validator $validator
      * @return void
      *
      * @throws \Illuminate\Validation\ValidationException
      */
     protected function failedValidation(Validator $validator)
     {
-
         $errors = (new ValidationException($validator))->errors();
-
         throw new HttpResponseException(
             ResponseServise::sendJsonResponse(
                 false,
