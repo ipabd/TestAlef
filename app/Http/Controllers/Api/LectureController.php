@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers\Api;
-
 use App\Http\Controllers\Controller;
 use App\Models\Lecture;
 use App\Http\Services\LectureService;
@@ -10,11 +9,13 @@ use App\Http\Requests\LectureRequest;
 
 class LectureController extends Controller
 {
-    private $service;
+    private Object $service;
+
     public function __construct(LectureService $lectureService)
     {
         $this->service = $lectureService;
     }
+
     /**
      * Display a listing of the resource.
      *
@@ -22,65 +23,78 @@ class LectureController extends Controller
      */
     public function index()
     {
-        return ResponseServise::sendJsonResponse(true, 200,[],[
-            'items' =>  $this->service->getLecture()
-        ]);
+        if (count(Lecture::all()))
+            return ResponseServise::sendJsonResponse(true, 200, [], [
+                'items' => $this->service->getLecture()
+            ]);
+        else
+            return ResponseServise::notFound();
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
 
     public function store(LectureRequest $request)
     {
-        $item = $this->service->save($request, new Lecture());
-        return ResponseServise::sendJsonResponse(true, 200,[],[
-            'item' =>  $item->toArray()
+        $request->validate($request->rules());
+        $item = $this->service->save($request);
+        return ResponseServise::sendJsonResponse(true, 200, [], [
+            'item' => $item->toArray()
         ]);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
-    public function show(Lecture $lecture)
+    public function show(int $id)
     {
-        return ResponseServise::sendJsonResponse(true, 200,[],[
-            'item' =>   $this->service->getShow($lecture->id)
-        ]);
+        $lecture = Lecture::find($id);
+        if ($lecture)
+            return ResponseServise::sendJsonResponse(true, 200, [], [
+                'item' => $this->service->getShow($id)
+            ]);
+        else
+            return ResponseServise::notFound();
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param  \Illuminate\Http\Request $request
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
-    public function update(LectureRequest $request, Lecture $lecture)
+    public function update(LectureRequest $request, int $id)
     {
-        $item = $this->service->save($request, $lecture);
-        return ResponseServise::sendJsonResponse(true, 200,[],[
-            'item' =>  $item->toArray()
+        $lecture = Lecture::find($id);
+        if (!$lecture) return ResponseServise::notFound();
+        $request->validate($request->rules());
+        $item = $this->service->save($request, $id);
+        return ResponseServise::sendJsonResponse(true, 200, [], [
+            'item' => $item->toArray()
         ]);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Lecture $lecture)
+    public function destroy(int $id)
     {
+        $lecture = Lecture::find($id);
+        if (!$lecture) return ResponseServise::notFound();
         $lecture->delete();
-        return ResponseServise::sendJsonResponse(true, 200,[],[
-            'item' =>  $lecture
+        return ResponseServise::sendJsonResponse(true, 200, [], [
+            'item' => $lecture
         ]);
     }
 }
