@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-class ClassstRequest extends  ApiRequest
+class ClassstRequest extends ApiRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -21,8 +21,9 @@ class ClassstRequest extends  ApiRequest
      */
     public function rules()
     {
+        $id = (int)$this->route()->parameter('classst');
         return [
-            'name' => 'required|unique:classsts',
+            'name' => 'required|unique:classsts,name,' . $id,
         ];
     }
 }
