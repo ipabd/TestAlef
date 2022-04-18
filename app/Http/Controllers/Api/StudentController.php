@@ -10,11 +10,13 @@ use App\Models\Student;
 
 class StudentController extends Controller
 {
-    private $service;
+    private  Object $service;
+
     public function __construct(StudentService $studentService)
     {
         $this->service = $studentService;
     }
+
     /**
      * Display a listing of the resource.
      *
@@ -22,61 +24,74 @@ class StudentController extends Controller
      */
     public function index()
     {
-        return ResponseServise::sendJsonResponse(true, 200,[],[
-            'items' =>  $this->service->getStudent()
-        ]);
-
+        if (count(Student::all()))
+            return ResponseServise::sendJsonResponse(true, 200, [], [
+                'items' => $this->service->getStudent()
+            ]);
+        else
+            return ResponseServise::notFound();
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
 
     public function store(StudentRequest $request)
     {
-        $item = $this->service->save($request, new Student());
-        return ResponseServise::sendJsonResponse(true, 200,[],[
-            'item' =>  $item->toArray()
+        $request->validate($request->rules());
+        $item = $this->service->save($request);
+        return ResponseServise::sendJsonResponse(true, 200, [], [
+            'item' => $item->toArray()
         ]);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
 
-    public function show(Student $student)
+    public function show(int $id)
     {
-        return ResponseServise::sendJsonResponse(true, 200,[],[
-            'item' =>   $this->service->getShow($student->id)
-        ]);
+        $student = Student::find($id);
+        if ($student)
+            return ResponseServise::sendJsonResponse(true, 200, [], [
+                'item' => $this->service->getShow($id)
+            ]);
+        else
+            return ResponseServise::notFound();
     }
+
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param  \Illuminate\Http\Request $request
+     * @param  int $id
      * @return \Illuminate\Http\Response
      */
-    public function update(StudentRequest $request, Student $student)
+    public function update(StudentRequest $request,int $id)
     {
-        $item = $this->service->save($request, $student);
-        return ResponseServise::sendJsonResponse(true, 200,[],[
-            'item' =>  $item->toArray()
+        $student = Student::find($id);
+        if (!$student) return ResponseServise::notFound();
+        $request->validate($request->rules());
+        $item = $this->service->save($request, $id);
+        return ResponseServise::sendJsonResponse(true, 200, [], [
+            'item' => $item->toArray()
         ]);
     }
 
-    public function destroy(Student $student)
+    public function destroy(int $id)
     {
+        $student = Student::find($id);
+        if (!$student) return ResponseServise::notFound();
         $student->delete();
-        return ResponseServise::sendJsonResponse(true, 200,[],[
-            'item' =>  $student
+        return ResponseServise::sendJsonResponse(true, 200, [], [
+            'item' => $student
         ]);
     }
 }
