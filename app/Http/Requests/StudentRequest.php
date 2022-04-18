@@ -2,8 +2,7 @@
 
 namespace App\Http\Requests;
 
-
-class StudentRequest extends  ApiRequest
+class StudentRequest extends ApiRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,9 +21,10 @@ class StudentRequest extends  ApiRequest
      */
     public function rules()
     {
+        $id = (int)$this->route()->parameter('student');
         return [
             'name' => 'required|max:255',
-            'email' => 'required|required|email|unique:students',
+            'email' => 'required|required|email|unique:students,name,' . $id,
         ];
     }
 }
