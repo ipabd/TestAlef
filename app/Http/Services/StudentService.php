@@ -1,53 +1,54 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: master
- * Date: 29.03.2022
- * Time: 18:24
- */
-
 namespace App\Http\Services;
+
 use App\Http\Requests\StudentRequest;
 use App\Models\Student;
 
 class StudentService
 {
-    public function getStudent()
+protected Object $model;
+
+    public function __construct(Student $student)
     {
-        $resultStudent = [];
-        $student= Student::with('classst:id,name')->get();
-        $resultStudent[] = $student->map(function($elem) {
-            $cl=$elem->classst()->get()->map(function($el){
-                return $el->name;
+        $this->model = $student;
+    }
+
+    public function getStudent(): array
+    {
+        $resultStudent = (array)[];
+        $students = (Object)$this->model::all();
+        foreach ($students as $i => $student) {
+            $classst = $student->classst()->get()->map(function (Object $elem) {
+                return (string)$elem->name;
             });
-            return ['name'=>$elem->name,'email'=>$elem->email,'classst'=>$cl->first()];
-        });
-        return $resultStudent;
+            $resultStudent[] = ['class' => $classst->first(), 'name' => $student->name,
+                'email' => $student->email];
+        }
+        return (array)$resultStudent;
     }
 
-    public function getShow($id)
+    public function getShow(int $id): array
     {
-        $resultStudent = [];
-        $student= Student::with('classst:id,name')->where('id',$id)->get();
-        $student->each(function ($item, $key) use (&$resultStudent) {
-            $resultStudent['student']=['name'=>$item->name,'email'=>$item->email];
-            $collection=$item->classst()->get();
-            foreach ($collection as $i=> $col) {
-                $collectionst=$col->lecture()->get();
-                $resultStudent['student']['classst']=$col->name;
-                $resultStudent['lecture'] = $collectionst->map(function($elem) {
-                    return $elem->name;
-                });
-            }
+        $resultStudent = (array)[];
+        $student = (Object)$this->model::findOrFail($id);
+        $resultStudent['name'] = $student->name;
+        $resultStudent['email'] = $student->email;
+        $classst = $student->classst()->get()->map(function (Object $elem) use (&$resultStudent) {
+            $elem->lecture()->get()->map(function (Object $el) use (&$resultStudent) {
+                $resultStudent['lecz'][] = $el->name;
+            });
+            return (string)$elem->name;
         });
-        return $resultStudent;
+        $resultStudent['class'] = $classst->first();
+        return (array)$resultStudent;
     }
 
 
-    public function save( StudentRequest $request,  Student $student)
+    public function save(StudentRequest $request, ?int $id = 0): Object
     {
+        $student = (!$id) ? (Object)new $this->model : (Object)$this->model::find($id);
         $student->fill($request->only($student->getFillable()));
         $student->save();
-        return $student;
+        return (Object)$student;
     }
 }
