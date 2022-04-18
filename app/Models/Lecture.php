@@ -14,8 +14,8 @@ class Lecture extends Model
         'description'
     ];
 
-    public function classst() {
-        return $this->belongsToMany(Classst::class,'plans');
+    public function classst()
+    {
+        return $this->belongsToMany(Classst::class, 'plans');
     }
-
 }
