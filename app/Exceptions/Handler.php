@@ -2,8 +2,11 @@
 
 namespace App\Exceptions;
 
+use App\Http\Services\ResponseServise;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Throwable;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
 
 class Handler extends ExceptionHandler
 {
@@ -34,8 +37,22 @@ class Handler extends ExceptionHandler
      */
     public function register()
     {
-        $this->reportable(function (Throwable $e) {
-            //
+        $this->renderable(function (NotFoundHttpException $e, $request) {
+            if ($request->wantsJson()) {
+                return ResponseServise::notFound();
+            }
+        });
+
+        $this->renderable(function (AccessDeniedHttpException $e, $request) {
+            if ($request->wantsJson()) {
+                return ResponseServise::notFound();
+            }
+        });
+
+        $this->renderable(function (\Exception $e, $request) {
+            if ($request->wantsJson()) {
+                return ResponseServise::ErrorApi();
+            }
         });
     }
 }
