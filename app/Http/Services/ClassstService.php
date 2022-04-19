@@ -53,7 +53,7 @@ protected Object $lecz;
             if ($lecture_id && $parent > 1) {
                 if ($this->lecz->find($lecture_id)) {
                     $lecture = (Object)$classst->lecture()->get()->where('id', $lecture_id);
-                    if ($lecture) {
+                    if (count($lecture)) {
                         $lecture->map(function (Object $elem) use (&$parent) {
                             $id = (int)$elem->pivot->id;
                             DB::update("UPDATE plans  SET parent = ? WHERE id=?", [$parent++, $id]);
