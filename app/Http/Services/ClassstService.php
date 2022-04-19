@@ -45,8 +45,8 @@ protected Object $lecz;
     {
         if ($id) {
             $req = (array)$request->all();
-            $lecture_id = (int)(isset($req['lecture'])) ? $req['lecture'] : null;
-            $parent = (int)(isset($req['parent'])) ? $req['parent'] : null;
+            $lecture_id = (isset($req['lecture'])) ? (int)$req['lecture'] : 0;
+            $parent = (isset($req['parent'])) ? (int)$req['parent'] : 0;
             $classst = (Object)$this->model::find($id);
             if ($lecture_id) {
                 if ($this->lecz->find($lecture_id)) {
