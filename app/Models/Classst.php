@@ -4,6 +4,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
 class Classst extends Model
 {
     use HasFactory;
@@ -19,7 +20,7 @@ class Classst extends Model
 
     public function lecture()
     {
-        return $this->belongsToMany(Lecture::class, 'plans')->withPivot('id',parent')
+        return $this->belongsToMany(Lecture::class, 'plans')->withPivot(['id','parent'])
             ->orderBy('parent');
     }
 }
