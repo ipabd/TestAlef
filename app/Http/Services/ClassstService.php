@@ -6,6 +6,7 @@ use App\Models\Classst;
 use App\Models\Lecture;
 use Illuminate\Support\Facades\DB;
 
+
 class ClassstService
 {
 protected Object $model;
@@ -32,11 +33,12 @@ protected Object $lecz;
         $classst = $this->model::findOrFail($id);
         $resultClassst['name'] = $classst->name;
         $classst->lecture()->get()->map(function (Object $elem) use (&$resultClassst) {
-            $resultClassst['lecz'][] = $elem->name;
+            $resultClassst['lecz'][] = $elem->name . '_' . $elem->pivot->parent;
         });
         $classst->student()->get()->map(function (Object $elem) use (&$resultClassst) {
             $resultClassst['studen'][] = $elem->name;
         });
+//        dump($resultClassst);
         return (array)$resultClassst;
     }
 
@@ -48,13 +50,14 @@ protected Object $lecz;
             $lecture_id = (isset($req['lecture'])) ? (int)$req['lecture'] : 0;
             $parent = (isset($req['parent'])) ? (int)$req['parent'] : 0;
             $classst = (Object)$this->model::find($id);
-            if ($lecture_id) {
+            if ($lecture_id && $parent > 1) {
                 if ($this->lecz->find($lecture_id)) {
-                    $lecture = ($classst->lecture()->find($lecture_id)) ?
-                        (Object)$classst->lecture()->find($lecture_id) : null;
+                    $lecture = (Object)$classst->lecture()->get()->where('id', $lecture_id);
                     if ($lecture) {
-                        $lecture->pivot->parent = $parent;
-                        $lecture->pivot->update();
+                        $lecture->map(function (Object $elem) use (&$parent) {
+                            $id = (int)$elem->pivot->id;
+                            DB::update("UPDATE plans  SET parent = ? WHERE id=?", [$parent++, $id]);
+                        });
                     } else {
                         DB::insert("INSERT INTO plans (classst_id,lecture_id,parent)
                            values (?,?,?)", [$id, $lecture_id, $parent]);
