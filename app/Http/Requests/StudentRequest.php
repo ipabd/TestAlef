@@ -21,7 +21,7 @@ class StudentRequest extends ApiRequest
      */
     public function rules()
     {
-        $id = (int)$this->route()->parameter('student');
+        $id = (int)$this->route()->parameter('id');
         return [
             'name' => 'required|max:255',
             'email' => 'required|required|email|unique:students,name,' . $id,
