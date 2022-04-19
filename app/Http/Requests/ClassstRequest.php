@@ -21,7 +21,7 @@ class ClassstRequest extends ApiRequest
      */
     public function rules()
     {
-        $id = (int)$this->route()->parameter('classst');
+        $id = (int)$this->route()->parameter('id');
         return [
             'name' => 'required|unique:classsts,name,' . $id,
         ];
