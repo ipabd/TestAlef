@@ -19,7 +19,7 @@ class Classst extends Model
 
     public function lecture()
     {
-        return $this->belongsToMany(Lecture::class, 'plans')->withPivot('parent')
+        return $this->belongsToMany(Lecture::class, 'plans')->withPivot('id',parent')
             ->orderBy('parent');
     }
 }
