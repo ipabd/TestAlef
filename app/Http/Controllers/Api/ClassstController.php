@@ -39,8 +39,8 @@ class ClassstController extends Controller
      */
     public function store(ClassstRequest $request)
     {
-        $request->validate($request->rules());
         //die();
+        $request->validate($request->rules());
         $item = $this->service->save($request);
         return ResponseServise::sendJsonResponse(true, 200, [], [
             'item' => $item->toArray()
@@ -76,7 +76,6 @@ class ClassstController extends Controller
         $classst = Classst::find($id);
         if (!$classst) return ResponseServise::notFound();
         $request->validate($request->rules());
-        //die();
         $item = $this->service->save($request, $id);
         return ResponseServise::sendJsonResponse(true, 200, [], [
             'item' => $item->toArray()
